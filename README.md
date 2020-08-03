@@ -1,5 +1,5 @@
 <h1 align="center">
-TESLA <image src="https://github.com/KnightZhang625/TESLA/image/logo.png" width="400"/>
+TESLA <image src="https://github.com/KnightZhang625/TESLA/tree/master/image/logo.png" width="400"/>
 </h1>
 
 <h2 align="center">
