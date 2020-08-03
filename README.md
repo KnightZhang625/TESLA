@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  TESLA <image src="https://github.com/KnightZhang625/TESLA/tree/master/image/logo.png" width="20"/>
+  <image src="https://github.com/KnightZhang625/TESLA/tree/master/image/logo.png" width="20"/>
   <br>
 <p>
 
