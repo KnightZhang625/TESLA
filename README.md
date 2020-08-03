@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  <image src="http://github.com/KnightZhang625/TESLA/master/image/1.png" width="20"/>
+  <image src="http://github.com/KnightZhang625/TESLA/raw/master/image/1.png" width="400"/>
   <br>
 <p>
 
