@@ -10,13 +10,13 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
 
 <p align="center">
     <a href="https://github.com/KnightZhang625/TESLA/blob/master/LICENSE">
-        <img alt="GitHub" src="https://img.shields.io/github/license/KnightZhang625/TESLA.svg?color=blue&style=flat-square">
+        <img alt="GitHub" src="https://img.shields.io/github/license/KnightZhang625/TESLA.svg?color=blue&style=flat">
     </a>
     <!-- <a href="http://nlp_architect.nervanasys.com">
         <img alt="Website" src="https://img.shields.io/website/http/nlp_architect.nervanasys.com.svg?down_color=red&down_message=offline&style=flat-square&up_message=online">
     </a> -->
     <a href="https://github.com/KnightZhang625/TESLA/releases">
-        <img alt="GitHub release" src="https://img.shields.io/github/release/KnightZhang625/TESLA.svg?style=flat-square">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/KnightZhang625/TESLA.svg?style=flat">
     </a>
     <a href="https://www.tensorflow.org">
         <img src="https://img.shields.io/badge/tensorflow-1.15-orange">
