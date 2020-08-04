@@ -18,9 +18,9 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
     <a href="https://github.com/KnightZhang625/TESLA/releases">
         <img alt="GitHub release" src="https://img.shields.io/github/release/KnightZhang625/TESLA.svg?style=flat-square">
     </a>
-    <!-- <a href="https://pepy.tech/project/nlp-architect/month">
-        <img src="https://pepy.tech/badge/nlp-architect/month">
-    </a> -->
+    <a href="https://www.tensorflow.org">
+        <img src="https://img.shields.io/badge/tensorflow-1.15-orange">
+    </a>
 </p>
 
 <h4 align="center">
