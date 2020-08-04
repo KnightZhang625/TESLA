@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  <image src="https://raw.githubusercontent.com/KnightZhang625/TESLA/master/image/logo.png" width="200"/>
+  <image src="https://raw.githubusercontent.com/KnightZhang625/TESLA/master/image/logo.png" width="500"/>
   <br>
 <p>
 
