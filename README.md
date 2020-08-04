@@ -12,9 +12,6 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
     <a href="https://github.com/KnightZhang625/TESLA/blob/master/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/KnightZhang625/TESLA.svg?color=blue&style=flat">
     </a>
-    <!-- <a href="http://nlp_architect.nervanasys.com">
-        <img alt="Website" src="https://img.shields.io/website/http/nlp_architect.nervanasys.com.svg?down_color=red&down_message=offline&style=flat-square&up_message=online">
-    </a> -->
     <a href="https://github.com/KnightZhang625/TESLA/releases">
         <img alt="GitHub release" src="https://img.shields.io/github/release/KnightZhang625/TESLA.svg?style=flat">
     </a>
@@ -22,7 +19,10 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
         <img src="https://img.shields.io/badge/tensorflow-1.15-orange">
     </a>
     <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/-python-lightgrey">
+        <img src="https://img.shields.io/badge/python-3.6-red">
+    </a>
+    <a href="https://github.com/KnightZhang625/TESLA">
+        <img src="https://img.shields.io/badge/-NLP%20TESLA-blue">
     </a>
 </p>
 
