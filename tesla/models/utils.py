@@ -18,11 +18,11 @@
 # ==============================================================================
 
 import six
-import logging
+# import logging
 import tensorflow as tf
 
-logger = logging.getLogger()
-logger.set_verbosity(logging.ERROR)
+# logger = logging.getLogger()
+# logging.set_verbosity(logging.ERROR)
 
 def get_shape_list(tensor, expected_rank=None, name=None):
   """Returns a list of shape of tensor, preferring static dimensions,
@@ -87,7 +87,13 @@ def assert_rank(tensor, expected_rank, name=None):
   tensor_rank = tensor.shape.ndims
   if tensor_rank not in expected_rank_dict:
       scope_name = tf.get_variable_scope().name
-      logger.error('For the tensor {} in scope {}, the tensor rank {} \
+      print('For the tensor {} in scope {}, the tensor rank {} \
               (shape = {}) is not equal to the expected_rank {}'.format(
           name, scope_name, tensor_rank, str(tensor.shape), str(expected_rank)))
       raise ValueError
+
+def create_initializer(init_type='trunc', initializer_range=0.02):
+  if init_type is 'trunc':
+    return tf.truncated_normal_initializer(stddev=initializer_range)
+  else:
+    raise NotImplementedError('Initialize Type: `{}` not implemented.'.format(init_type))
