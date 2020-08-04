@@ -17,24 +17,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
 import six
 import logging
 import tensorflow as tf
-from pathlib import Path
 
-PROJECT_PATH = Path(__file__).absolute().parent
-sys.path.insert(0, str(PROJECT_PATH))
-
-class Setup(object):
-    """Setup logging"""
-    def __init__(self, log_name=None, file_name='main.log', verbosity=logging.INFO, path=str(PROJECT_PATH / 'new/log')):
-        Path(PROJECT_PATH / 'log').mkdir(exist_ok=True)
-        tf.compat.v1.logging.set_verbosity(verbosity)
-        handlers = [logging.FileHandler(str(PROJECT_PATH / 'log/{}'.format(file_name))),
-                    logging.StreamHandler(sys.stdout)]
-        logging.getLogger(log_name).handlers = handlers
-        self.logger = logging
+logger = logging.getLogger()
+logger.set_verbosity(logging.ERROR)
 
 def get_shape_list(tensor, expected_rank=None, name=None):
   """Returns a list of shape of tensor, preferring static dimensions,
@@ -99,7 +87,7 @@ def assert_rank(tensor, expected_rank, name=None):
   tensor_rank = tensor.shape.ndims
   if tensor_rank not in expected_rank_dict:
       scope_name = tf.get_variable_scope().name
-      setup.logger.error('For the tensor {} in scope {}, the tensor rank {} \
+      logger.error('For the tensor {} in scope {}, the tensor rank {} \
               (shape = {}) is not equal to the expected_rank {}'.format(
           name, scope_name, tensor_rank, str(tensor.shape), str(expected_rank)))
       raise ValueError

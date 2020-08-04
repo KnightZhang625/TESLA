@@ -16,3 +16,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
+import sys
+import tensorflow as tf
+from pathlib import Path
+MAIN_PATH = Path(__file__).absolute().parent.parent.parent
+sys.path.append(str(MAIN_PATH))
+from tesla.models import BaseModel
+
+class TaggerModel(BaseModel):
+  def __init__(self):
+    pass
+
+if __name__ == '_main__':
+  tagger = TaggerModel()
