@@ -19,7 +19,7 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
         <img src="https://img.shields.io/badge/tensorflow-1.15-orange">
     </a>
     <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/python-3.6-9cf">
+        <img src="https://img.shields.io/badge/python-3.6-yellow">
     </a>
     <a href="https://github.com/KnightZhang625/TESLA">
         <img src="https://img.shields.io/badge/-NLP%20TESLA-blue">
