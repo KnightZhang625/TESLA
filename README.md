@@ -23,4 +23,23 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
     </a> -->
 </p>
 
-TESLA is an open source platform for rewriting the nlp-architect by Intel. in TensorFlow 1.15
+<h4 align="center">
+  <a href="#overview">Overview</a> |
+  <a href="#models">Models</a> |
+  <!-- <a href="#installing-nlp-architect">Requirements</a> |
+  <a href="https://github.com/NervanaSystems/nlp-architect/tree/master/examples">Examples</a> <a href="http://nlp_architect.nervanasys.com/"></a> |
+  <a href="http://nlp_architect.nervanasys.com">Documentation</a> |
+  <a href="https://github.com/NervanaSystems/nlp-architect/tree/master/tutorials">Tutorials</a> |
+  <a href="http://nlp_architect.nervanasys.com/developer_guide.html">Contributing</a> -->
+</h4>
+
+TESLA is an open source platform for rewriting the nlp-architect by Intel. in TensorFlow 1.15.
+
+## Overview  
+
+
+## Models  
+
+NLP models that provide best (or near) in class performance:  
+
+* [Named Entity Recognition](https://github.com/KnightZhang625/TESLA)
