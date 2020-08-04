@@ -25,7 +25,7 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
 
 <h4 align="center">
   <a href="#overview">Overview</a> |
-  <a href="#models">Models</a> |
+  <a href="#models">Models</a>
   <!-- <a href="#installing-nlp-architect">Requirements</a> |
   <a href="https://github.com/NervanaSystems/nlp-architect/tree/master/examples">Examples</a> <a href="http://nlp_architect.nervanasys.com/"></a> |
   <a href="http://nlp_architect.nervanasys.com">Documentation</a> |
