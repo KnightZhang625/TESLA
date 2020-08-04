@@ -1,11 +1,9 @@
-<a href="https://github.com/KnightZhang625"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_left_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1">
-
 <p align="center">
   <br>
   <image src="https://raw.githubusercontent.com/KnightZhang625/TESLA/master/image/project_logo.jpg" width="200"/>
   <br>
 <p>
-</a>
+
 <h2 align="center">
 A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-zhang-a96a97bb/en-us">Jiaxin Zhang</a>
 </h2>
