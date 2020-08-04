@@ -33,7 +33,7 @@ class Setup(object):
         logging.getLogger(log_name).handlers = handlers
         self.logger = logging
 
-setup = Setup(path='./log', log_name='tensorflow')
+# setup = Setup(path='./log', log_name='tensorflow')
 
 class BaseModel(ABC):
   """Base Model to inherit."""
