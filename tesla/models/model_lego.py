@@ -28,7 +28,7 @@ sys.path.append(str(MAIN_PATH))
 
 from tesla.models.utils import assert_rank, get_shape_list, create_initializer
 
-def crfEncode(logits, labels, sequence_lengths):
+def crfEncode(logits, labels, sequence_lengths, transition_params):
 	"""CRF forward step, Please specify the scope outside.
 	
 	Args:
@@ -45,7 +45,7 @@ def crfEncode(logits, labels, sequence_lengths):
 	assert_rank(sequence_lengths, 1)
 	
 	return tf.contrib.crf.crf_log_likelihood(
-		logits, labels, sequence_lengths)
+		logits, labels, sequence_lengths, transition_params)
 
 def crfDecode(logit, transition_params):
 	"""CRF Decode step. Only support single prediction.
@@ -156,10 +156,10 @@ def textCNN(embedding,
 	return output
 
 def create_single_cell_RNN(cell_type,
-                           hidden_size,
-                           dropout_prob,
-                           residual,
-                           forget_bias):
+													 hidden_size,
+													 dropout_prob,
+													 residual,
+													 forget_bias):
 	"""create single cell for rnn."""
 	single_cell = None
 	ac = tf.nn.tanh
@@ -186,11 +186,11 @@ def create_single_cell_RNN(cell_type,
 	return single_cell
 
 def createMultiRNNCells(cell_type,
-											  hidden_size,
-											  num_layers,
-											  num_residual_layers,
-											  dropout_prob,
-											  forget_bias):
+												hidden_size,
+												num_layers,
+												num_residual_layers,
+												dropout_prob,
+												forget_bias):
 	"""Create cells for rnn.
 		
 		Args:
@@ -218,28 +218,29 @@ def createMultiRNNCells(cell_type,
 
 if __name__ == '__main__':
 	### Example for CRF ###
-	# gold_labels = tf.constant([[1, 2, 3], [5, 6, 7]], dtype=tf.int32)
-	# scores = tf.random.normal((2, 3, 10), dtype=tf.float32) 
-	# sequence_lengths = tf.constant([3, 2], dtype=tf.int32)  
+	gold_labels = tf.constant([[1, 2, 3], [5, 6, 7]], dtype=tf.int32)
+	scores = tf.random.normal((2, 3, 10), dtype=tf.float32) 
+	sequence_lengths = tf.constant([3, 2], dtype=tf.int32)  
 
-	# with tf.variable_scope('test'):
-	#   log_likelihood, transition_params = crfEncode(scores, gold_labels, sequence_lengths)
-	
-	# pred_scores = tf.random.normal([3, 10], dtype=tf.float32)
-	# viterbi_sequence, viterbi_score = crfDecode(pred_scores, transition_params)
-	# print(viterbi_sequence)
-	# print(viterbi_score)
+	with tf.variable_scope('test'):
+		transition_params = tf.get_variable(name='transition_params', shape=[10, 10], initializer=tf.truncated_normal_initializer)
+		log_likelihood, _ = crfEncode(scores, gold_labels, sequence_lengths, transition_params)
+	print(transition_params)
+	pred_scores = tf.random.normal([3, 10], dtype=tf.float32)
+	viterbi_sequence, viterbi_score = crfDecode(pred_scores, transition_params)
+	print(viterbi_sequence)
+	print(viterbi_score)
 
 	### Example for textCNN ###
-	embedding = tf.random.normal((10, 20, 30))
-	window_size = [2, 3, 4]
-	filter_number = 2
-	pool_size = [19, 18, 17]
-	dropout_prob = 0.1
-	for _ in range(10):
-		output = textCNN(embedding,
-										window_size,
-										filter_number,
-										pool_size,
-										dropout_prob)
-		print(output.shape)
+	# embedding = tf.random.normal((10, 20, 30))
+	# window_size = [2, 3, 4]
+	# filter_number = 2
+	# pool_size = [19, 18, 17]
+	# dropout_prob = 0.1
+	# for _ in range(10):
+	# 	output = textCNN(embedding,
+	# 									window_size,
+	# 									filter_number,
+	# 									pool_size,
+	# 									dropout_prob)
+	# 	print(output.shape)
