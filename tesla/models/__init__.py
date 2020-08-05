@@ -41,5 +41,5 @@ class BaseModel(ABC):
   def buildGraph(self, *args, **kwargs):
     raise NotImplementedError
   
-  def getLogits(self, *args, **kwargs):
+  def getResults(self, *args, **kwargs):
     raise NotImplementedError
