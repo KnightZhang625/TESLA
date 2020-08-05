@@ -183,7 +183,7 @@ class TaggerModel(BaseModel):
     raise ValueError
 
 if __name__ == '__main__':
-  ### Example for the Model. ###
+  ### Example for the Model ###
   import collections
   
   Config = collections.namedtuple('Config',
