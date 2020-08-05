@@ -19,6 +19,7 @@
 
 import sys
 import copy
+import numpy as np
 import tensorflow as tf
 from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent
@@ -43,7 +44,6 @@ class TaggerModel(BaseModel):
       input_x: tf.int32 Tensor with shape [batch_size, seq_length].
       input_length: tf.int32 Tensor with shape [batch_size].
       input_char: tf.int32 Tensor with shape [batch, seq_length, each_vocab_size].
-      padding_seq_length: tf.int32 Tensor, which indicated the length of the padding sequence.
     """
     config = copy.deepcopy(config)
     self.is_training = is_training
@@ -71,13 +71,13 @@ class TaggerModel(BaseModel):
     self.dropout = config.dropout if self.is_training else 0.0
 
     self.results = {}
+    self.buildGraph(input_x, input_length, golden_labels, input_char)
   
   def buildGraph(self, 
                  input_x, 
                  input_length,
                  golden_labels,
-                 input_char=None, 
-                 padding_seq_length=None):
+                 input_char=None):
     with tf.variable_scope('cnn_lstm_crf'):
       # word embedding
       with tf.variable_scope('vocab_embedding'):
@@ -89,7 +89,7 @@ class TaggerModel(BaseModel):
       
       # character embedding
       if self.enable_char_embedding:
-        with tf.variable_scope('char_embedding', reuse=True):
+        with tf.variable_scope('char_embedding', reuse=tf.AUTO_REUSE):
           # char_embedding_output -> [b, s, v_s, e]
           char_embedding_output, self.char_embedding_table = embedding_lookup(
             input_ids=input_char,
@@ -112,7 +112,7 @@ class TaggerModel(BaseModel):
         embedding_output = tf.concat((embedding_output, char_cnn_embeddings), -1)
       
       with tf.variable_scope('rnn'):
-        assert_op = tf.assert_equal([self.num_layers % 2, 0])
+        assert_op = tf.assert_equal(self.num_layers % 2, 0)
         with tf.control_dependencies([assert_op]):
           num_bi_layers = int(self.num_layers / 2)
           num_bi_residual_layers =  num_bi_layers - 1
@@ -145,17 +145,21 @@ class TaggerModel(BaseModel):
           activation=tf.nn.relu,
           name='linear_transformer',
           kernel_initializer=create_initializer())
+      self.results['outputs'] = outputs
       
-      with tf.variable_scope('crf'):
-        self.log_likelihood, self.transition_params = crfEncode(
-          logits=outputs,
-          labels=golden_labels,
-          sequence_lengths=input_length)
-      
-      self.results['log_likelihood'] = self.log_likelihood
-      self.results['transition_params'] = self.transition_params
+      if self.is_training:
+        with tf.variable_scope('crf'):
+          self.transition_params = tf.Variable(tf.truncated_normal([self.num_classes, self.num_classes], stddev=0.1), name='transition_params')
+          self.log_likelihood, _ = crfEncode(
+            logits=outputs,
+            labels=golden_labels,
+            sequence_lengths=input_length,
+            transition_params=self.transition_params)
+        
+        self.results['log_likelihood'] = self.log_likelihood
+        self.results['transition_params'] = self.transition_params
 
-  def decode(self, logit):
+  def decode(self, logit, transition_params):
     """Viterbi Decode.
     
     Args:
@@ -165,7 +169,7 @@ class TaggerModel(BaseModel):
       viterbi_sequence: a list of predicted indices.
 		  viterbi_score: the log-likelihood score.
     """
-    return crfDecode(logit, self.transition_params)
+    return crfDecode(logit, transition_params)
   
   def getResults(self, name):
     """Return the results.
@@ -178,5 +182,41 @@ class TaggerModel(BaseModel):
     print('Cannot find `{}` in results.'.format(name))
     raise ValueError
 
-if __name__ == '_main__':
-  pass
+if __name__ == '__main__':
+  ### Example for the Model. ###
+  import collections
+  
+  Config = collections.namedtuple('Config',
+    'enable_char_embedding char_size char_embedding_size padding_seq_length \
+      vocab_size embedding_size window_size pool_size filter_number num_layers \
+      cell_type forget_bias hidden_size num_classes initialize_range dropout')
+  config = Config(enable_char_embedding=True,
+                  char_size=26,
+                  char_embedding_size=30,
+                  padding_seq_length=10,
+                  vocab_size=120,
+                  embedding_size=60,
+                  window_size=[2, 3, 4],
+                  pool_size=[4, 3, 2],
+                  filter_number=2,
+                  num_layers=4,
+                  cell_type='gru',
+                  forget_bias=True,
+                  hidden_size=16,
+                  num_classes=8,
+                  initialize_range=1e-2,
+                  dropout=0.1)
+  
+  input_x = tf.ones((5, 10), dtype=tf.int32)
+  golden_labels = tf.ones((5, 10), dtype=tf.int32)
+  input_char = tf.ones((5, 10, 5), dtype=tf.int32)
+  input_length = tf.constant([5, 7, 8, 10, 10], dtype=tf.int32)
+  toy_model = TaggerModel(config,
+                          True,
+                          input_x=input_x,
+                          golden_labels=golden_labels,
+                          input_length=input_length,
+                          input_char=input_char)
+
+  print(toy_model.log_likelihood)
+  print(toy_model.transition_params)
