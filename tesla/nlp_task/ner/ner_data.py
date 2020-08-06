@@ -23,8 +23,8 @@ import codecs
 import random
 import tensorflow as tf
 from pathlib import Path
-MAIN_PATH = Path(__file__).absolute().parent.parent.parent
-sys.path.insert(0, str(MAIN_PATH))
+MAIN_PATH = Path(__file__).absolute().parent.parent.parent.parent
+sys.path.append(str(MAIN_PATH))
 from tesla.utils.data_pipeline import createBatchIndex
 
 def data_generator(data_path, batch_size):
@@ -32,6 +32,9 @@ def data_generator(data_path, batch_size):
   with codecs.open(data_path, 'r', 'utf-8') as file:
     data = file.read().split('\n')
   
+  for line in data:
+    print(line)
+    input()
   data = copy.deepcopy(data)
   random.shuffle(data)
 
@@ -56,3 +59,7 @@ def input_fn(data_path, steps, batch_size):
                    'input_char': [None, None, None]}
   label_types = {'golden_labels': tf.int32}
   label_shapes = {'golden_labels': [None, None]}
+
+if __name__ == '__main__':
+  conll2000_data_path = MAIN_PATH / 'datasets/CONLL2000/train.txt'
+  data_generator(conll2000_data_path, 30)
