@@ -23,13 +23,17 @@ import functools
 from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent
 
+convertStrToIdx = lambda entry, dic : [dic[vocab] if vocab in dic else dic['<unk>'] 
+                                        for vocab in entry]
+padding_func = lambda line, max_length, pad_idx : line + [pad_idx  for _ in range(max_length - len(line))] if max_length >= len(line) else line[:max_length]
+
 def createBatchIndex(total_length, batch_size):
   """Provide indices for the batch data."""
   batch_number = total_length // batch_size
   batch_number = batch_number if total_length % batch_size == 0 else batch_number + 1
 
   for i in range(batch_number):
-    yield (i*batch_number, i*batch_number+batch_number)
+    yield (i*batch_size, i*batch_size+batch_size)
 
 def _createDefaultSavePath(func):
   """Decorator for creating the binary file name."""
