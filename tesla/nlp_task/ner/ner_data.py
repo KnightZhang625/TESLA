@@ -20,35 +20,105 @@
 import sys
 import copy
 import codecs
+import pickle
 import random
+import functools
 import tensorflow as tf
+tf.enable_eager_execution()
 from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent.parent
 sys.path.append(str(MAIN_PATH))
-from tesla.utils.data_pipeline import createBatchIndex
+from tesla.utils.data_pipeline import createBatchIndex, convertStrToIdx, padding_func
+
+def createDictionary(data_path):
+  vocab_idx = {}
+  vocab_c = 0
+  tag_idx = {}
+  tag_c = 0
+  with codecs.open(data_path, 'rb') as file:
+    datas = pickle.load(file)
+    for line in datas:
+      for entry in line:
+        vocab = entry.split(' ')[0]
+        tag = entry.split(' ')[1]
+        if vocab not in vocab_idx:
+          vocab_idx[vocab] = vocab_c
+          vocab_c += 1
+        if tag not in tag_idx:
+          tag_idx[tag] = tag_c
+          tag_c += 1
+  vocab_idx['<unk>'] = vocab_c
+  vocab_idx['<padding>'] = vocab_c + 1
+  tag_idx['<unk>'] = tag_c
+  tag_idx['<padding>'] = tag_c + 1
+  return vocab_idx, tag_idx
+
+def loadDict():
+  global vocab_idx
+  global tag_idx
+  global char_idx
+  with codecs.open(MAIN_PATH / 'datasets/CONLL2000/vocab_idx.bin', 'rb') as file:
+    vocab_idx = pickle.load(file)
+  with codecs.open(MAIN_PATH / 'datasets/CONLL2000/tag_idx.bin', 'rb') as file:
+    tag_idx = pickle.load(file)
+  char_idx = {chr(i) : i-97 for i in range(97, 123)}
+  char_idx['<unk>'] = 26
+  char_idx['<padding>'] = 27
+loadDict()
+convertStrToIdx_vocab = functools.partial(convertStrToIdx, dic=vocab_idx)
+convertStrToIdx_char = functools.partial(convertStrToIdx, dic=char_idx)
+convertStrToIdx_tag = functools.partial(convertStrToIdx, dic=tag_idx)
 
 def data_generator(data_path, batch_size):
   """This is the generator for the CONLL2000 dataset."""
-  with codecs.open(data_path, 'r', 'utf-8') as file:
-    data = file.read().split('\n')
+  with codecs.open(data_path, 'rb') as file:
+    datas = pickle.load(file)
   
-  for line in data:
-    print(line)
-    input()
-  data = copy.deepcopy(data)
-  random.shuffle(data)
+  datas = copy.deepcopy(datas)
+  random.shuffle(datas)
 
-  for (start, end) in createBatchIndex(len(data), batch_size):
-    data_batch = data[start : end]
+  for (start, end) in createBatchIndex(len(datas), batch_size):
+    # get data, label with batch size
+    data_batch = datas[start : end]
+    input_x = [[entry.split(' ')[0]for entry in data] for data in data_batch]
+    input_char = [[[char.lower() for char in vocab] for vocab in x] for x in input_x]
+    golden_labels = [[entry.split(' ')[1] if entry.split(' ')[2] != 'O' else 'O' 
+                  for entry in data] for data in data_batch]
+    input_length = [len(x) for x in input_x]
 
+    # convert str to idx
+    input_x = list(map(convertStrToIdx_vocab, input_x))
+    input_char = [list(map(convertStrToIdx_char, line)) for line in input_char]
+    golden_labels = list(map(convertStrToIdx_tag, golden_labels))
 
+    # padding
+    input_x_max_length = max(input_length)
+    padding_func_input_x = functools.partial(padding_func, max_length=input_x_max_length, pad_idx=vocab_idx['<padding>'])
+    input_x_padded = list(map(padding_func_input_x, input_x))
+  
+    padding_func_input_char = functools.partial(padding_func, max_length=15, pad_idx=char_idx['<padding>'])
+    input_char_padded = [list(map(padding_func_input_char, line)) for line in input_char]
+    padding_func_input_char_mid = functools.partial(
+      padding_func, max_length=input_x_max_length, pad_idx=[char_idx['<padding>'] 
+        for _ in range(15)])
+    input_char_padded = list(map(padding_func_input_char_mid, input_char_padded))
+
+    padding_func_golden_labels = functools.partial(padding_func, max_length=input_x_max_length, pad_idx=tag_idx['<padding>'])
+    golden_labels_padded = list(map(padding_func_golden_labels, golden_labels))
+
+    # send the data
+    features = {'input_x': input_x_padded,
+                'input_char': input_char_padded,
+                'input_length': input_length}
+    tags = {'golden_labels': golden_labels_padded}
+    yield(features, tags)
 
 def input_fn(data_path, steps, batch_size):
   """
     Input function for the Estimator.
 
     Args:
-      data_path: absolute path, the data should be saved as the txt format.
+      data_path: absolute path, the data should be saved as the binary format.
       steps: train steps.
   """
   output_types = {'input_x': tf.int32,
@@ -60,6 +130,26 @@ def input_fn(data_path, steps, batch_size):
   label_types = {'golden_labels': tf.int32}
   label_shapes = {'golden_labels': [None, None]}
 
+  data_generator_with_args = functools.partial(data_generator,
+                                                data_path=data_path,
+                                                batch_size=batch_size)
+  dataset = tf.data.Dataset.from_generator(
+    data_generator_with_args,
+    output_types=(output_types, label_types),
+    output_shapes=(output_shapes, label_shapes))
+  
+  dataset = dataset.repeat(steps)
+  return dataset
+
 if __name__ == '__main__':
-  conll2000_data_path = MAIN_PATH / 'datasets/CONLL2000/train.txt'
-  data_generator(conll2000_data_path, 30)
+  ### Test input_fn ###
+  conll2000_data_path = MAIN_PATH / 'datasets/CONLL2000/train.bin'
+  # for data in input_fn(conll2000_data_path, 1, 100):
+  #   print(data)
+
+  ### create the dictionary ###
+  vocab_idx, tag_idx = createDictionary(conll2000_data_path)
+  # with codecs.open(MAIN_PATH / 'datasets/CONLL2000/vocab_idx.bin', 'wb') as file:
+  #   pickle.dump(vocab_idx, file)
+  # with codecs.open(MAIN_PATH / 'datasets/CONLL2000/tag_idx.bin', 'wb') as file:
+  #   pickle.dump(tag_idx, file)
