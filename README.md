@@ -46,4 +46,4 @@ TESLA is an open source platform for rewriting the [nlp-architect](http://nlp_ar
 
 NLP models that provide best (or near) in class performance:  
 
-* [Named Entity Recognition](https://github.com/KnightZhang625/TESLA/blob/master/tesla/models/cnn_lstm_crf.py)
+* [Named Entity Recognition](https://github.com/KnightZhang625/TESLA/tree/master/tesla/nlp_task/ner)
