@@ -33,9 +33,9 @@ class TaggerModel(BaseModel):
                config,
                is_training,
                input_x,
-               golden_labels,
                input_length,
-               input_char=None):
+               input_char=None,
+               golden_labels=None):
     """Constructor for CNN-LSTM-CRF Model.
     
     Args:
@@ -71,13 +71,13 @@ class TaggerModel(BaseModel):
     self.dropout = config.dropout if self.is_training else 0.0
 
     self.results = {}
-    self.buildGraph(input_x, input_length, golden_labels, input_char)
+    self.buildGraph(input_x, input_length, input_char, golden_labels)
   
   def buildGraph(self, 
                  input_x, 
                  input_length,
-                 golden_labels,
-                 input_char=None):
+                 input_char,
+                 golden_labels):
     with tf.variable_scope('cnn_lstm_crf'):
       # word embedding
       with tf.variable_scope('vocab_embedding'):
