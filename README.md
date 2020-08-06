@@ -36,7 +36,7 @@ A Deep Learning NLP/NLU platfrom by <a href="https://cn.linkedin.com/in/jiaxin-z
   <a href="http://nlp_architect.nervanasys.com/developer_guide.html">Contributing</a> -->
 </h4>
 
-TESLA is an open source platform for rewriting the [nlp-architect](http://nlp_architect.nervanasys.com/#) by Intel. in TensorFlow 1.15. Double Salute to the team.  
+TESLA is an open source platform for rewriting the [nlp-architect](http://nlp_architect.nervanasys.com/#) by Intel®. in TensorFlow 1.15. Double Salute to the team.  
 "If I have seen further it is by standing on the shoulders of Giants." --- Isaac Newton in 1675.
 
 ## Overview  
