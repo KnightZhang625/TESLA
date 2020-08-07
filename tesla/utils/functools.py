@@ -19,8 +19,10 @@
 
 import sys
 import logging
+import functools
 import tensorflow as tf
 from pathlib import Path
+from tensorflow.contrib import predictor
 
 class Setup(object):
     """Setup logging"""
@@ -46,3 +48,28 @@ class NoNewAttrs(object):
   __setattr__ = forbid_new_attributes(object.__setattr__)
   class __metaclass__(type):
       __setattr__ = forbid_new_attributes(type.__setattr__)
+
+def restorePath(pb_path):
+  """Restore the latest model from the given path."""
+  subdirs = [x for x in Path(pb_path).iterdir()
+             if x.is_dir() and 'temp' not in str(x)]
+  latest_model = str(sorted(subdirs)[-1])
+  predict_fn = predictor.from_saved_model(latest_model)
+
+  return predict_fn
+
+def convertType(flag):
+  def convertInputToPredict(func):
+    @functools.wraps(func)
+    def convertInputToPredictWrapper(*args, **kwargs):
+      model, input_data = args[0], args[1]
+      if flag == 'nested_list':
+        if type(input_data) is str:
+          return func(model, [input_data])
+        else:
+          return func(model, input_data)
+      else:
+        raise ValueError('Not support {}.'.format(flag))
+
+    return convertInputToPredictWrapper
+  return convertInputToPredict
