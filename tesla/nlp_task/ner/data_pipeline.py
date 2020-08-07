@@ -144,6 +144,20 @@ def inputFn(data_path, steps, batch_size):
   dataset = dataset.repeat(steps)
   return dataset
 
+def serverInputFunc():
+  input_x = tf.placeholder(tf.int32, shape=[None, None], name='input_x')
+  input_length = tf.placeholder(tf.int32, shape=[None], name='input_length')
+  input_char = tf.placeholder(tf.int32, shape=[None, None, None], name='input_char')
+
+  receiver_tensors = {'input_x': input_x,
+                      'input_length': input_length,
+                      'input_char': input_char}
+  features = {'input_x': input_x,
+              'input_length': input_length,
+              'input_char': input_char}
+  
+  return tf.estimator.export.ServingInputReceiver(features, receiver_tensors)
+
 if __name__ == '__main__':
   ### Test input_fn ###
   conll2000_data_path = MAIN_PATH / 'datasets/CONLL2000/train.bin'

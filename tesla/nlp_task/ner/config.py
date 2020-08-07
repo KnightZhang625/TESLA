@@ -9,6 +9,7 @@ sys.path.append(str(MAIN_PATH))
 from tesla.utils.functools import NoNewAttrs
 
 SAVE_MODEL_PATH = './models'
+PB_MODEL_PATH = './pb_models'
 LEARNING_RATE = 1e-4
 LEARNING_RATE_LIMIT = 1e-4
 TRAIN_STEPS = 100

@@ -17,17 +17,33 @@
 # limitations under the License.
 # ==============================================================================
 
+import argparse
 import functools
 import tensorflow as tf
 from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent.parent
 
 import config as cg
-from data_pipeline import inputFn
+from data_pipeline import inputFn, serverInputFunc
 from tesla.models.cnn_lstm_crf import TaggerModel
 from tesla.utils.functools import Setup
 
 setup = Setup(path='log', log_name='tensorflow')
+
+def createArgumentParser():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--mode', type=str, required=True, 
+    help='Choose \'train\' or \'package\' the model.')
+  parser.add_argument('--intra', type=int, default=0,
+    help='Better equals to the physical cpu numbers.')
+  parser.add_argument('--inter', type=int, default=0,
+    help='Experiment starts from 2.')
+  parser.add_argument('--ckpt', type=str, default=cg.SAVE_MODEL_PATH,
+    help='The path where the model saved.')
+  parser.add_argument('--pb', type=str, default=cg.PB_MODEL_PATH,
+    help='The path where the pb model to saved.')
+
+  return parser
 
 def modelFnBuilder(config):
   """Returns 'model_fn' closure for Estimator."""
@@ -50,16 +66,17 @@ def modelFnBuilder(config):
                         input_length=input_length,
                         input_char=input_char,
                         golden_labels=golden_labels)
-    log_likelihood = model.getResults('log_likelihood')
-    transition_params = model.getResults('transition_params')
     
     # perdict
     if mode == tf.estimator.ModeKeys.PREDICT:
-      viterbi_sequence, viterbi_score = model.decode(logit=log_likelihood, transition_params=transition_params)
+      logit = model.getResults('outputs')
+      viterbi_sequence, viterbi_score = model.decode(logit=logit, sequence_lengths=input_length)
       predicitions = {'viterbi_sequence': viterbi_sequence,
                      'viterbi_score': viterbi_score}
       output_spec = tf.estimator.EstimatorSpec(mode, predictions=predicitions)
     elif mode == tf.estimator.ModeKeys.TRAIN:
+      log_likelihood = model.getResults('log_likelihood')
+      transition_params = model.getResults('transition_params')
       loss = tf.reduce_mean(-log_likelihood)
       # add l2 loss
       tvars = tf.trainable_variables()
@@ -91,15 +108,15 @@ def modelFnBuilder(config):
   
   return model_fn
 
-def main():
+def main(intra, inter):
   Path(cg.SAVE_MODEL_PATH).mkdir(exist_ok=True)
 
   model_fn = modelFnBuilder(cg.model_config)
 
   gpu_config = tf.ConfigProto()
   gpu_config.gpu_options.allow_growth = True
-  gpu_config.intra_op_parallelism_threads = 2
-  gpu_config.inter_op_parallelism_threads = 2
+  gpu_config.intra_op_parallelism_threads = intra
+  gpu_config.inter_op_parallelism_threads = inter
 
   run_config = tf.estimator.RunConfig(
     session_config=gpu_config,
@@ -118,5 +135,30 @@ def main():
   input_fn = functools.partial(inputFn, data_path=cg.DATA_PATH, steps=cg.TRAIN_STEPS, batch_size=cg.BATCH_SZIE)
   estimator.train(input_fn)
 
+def package(ckpt_path, pb_path):
+  """Package the model to deploy, i.e., pb format.
+  
+  Args:
+    ckpt_path: the path where the model is saved, default is config.SAVE_MODEL_PATH.
+    pb_path: the path where the pb model to saved, default is config.PB_MODEL_PATH
+  """
+  model_fn = modelFnBuilder(cg.model_config)
+  estimator = tf.estimator.Estimator(model_fn, ckpt_path)
+  Path(pb_path).mkdir(exist_ok=True)
+  estimator.export_saved_model(pb_path, serverInputFunc)
+
 if __name__ == '__main__':
-  main()
+  parser = createArgumentParser()
+  args = parser.parse_args()
+
+  mode = args.mode
+  intra = args.intra
+  inter = args.inter
+  if mode == 'train':
+    main(intra, inter)
+  elif mode == 'package':
+    ckpt_path = args.ckpt
+    pb_path = args.pb
+    package(ckpt_path, pb_path)
+  else:
+    raise NotImplementedError('Unknown mode value: \'{}\'.'.format(mode))
