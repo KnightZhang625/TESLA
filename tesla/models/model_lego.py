@@ -83,7 +83,6 @@ def embedding_lookup(input_ids,
 	Returns:
 		float Tensor of shape [batch_size, seq_length, embedding_size].
 	"""
-	
 	embedding_table = tf.get_variable(
 		name=word_embedding_name,
 		shape=[vocab_size, embedding_size],
