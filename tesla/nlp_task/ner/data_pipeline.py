@@ -101,6 +101,7 @@ def data_generator(data_path, batch_size):
   
     padding_func_input_char = functools.partial(padding_func, max_length=15, pad_idx=char_idx['<padding>'])
     input_char_padded = [list(map(padding_func_input_char, line)) for line in input_char]
+    # use [char_idx['<padding>'] * 15] to pad the last part
     padding_func_input_char_mid = functools.partial(
       padding_func, max_length=input_x_max_length, pad_idx=[char_idx['<padding>'] 
         for _ in range(15)])
