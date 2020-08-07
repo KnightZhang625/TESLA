@@ -23,18 +23,6 @@ import tensorflow as tf
 from pathlib import Path
 from abc import ABC
 
-class Setup(object):
-    """Setup logging"""
-    def __init__(self, path, log_name=None, file_name='main.log', verbosity=logging.INFO):
-        Path(path).mkdir(exist_ok=True)
-        tf.compat.v1.logging.set_verbosity(verbosity)
-        handlers = [logging.FileHandler(str(path) + '/' + file_name),
-                    logging.StreamHandler(sys.stdout)]
-        logging.getLogger(log_name).handlers = handlers
-        self.logger = logging
-
-# setup = Setup(path='./log', log_name='tensorflow')
-
 class BaseModel(ABC):
   """Base Model to inherit."""
 
