@@ -110,7 +110,9 @@ class TaggerModel(BaseModel):
           char_cnn_embeddings = tf.concat(char_cnn_embeddings, 1)
 
         embedding_output = tf.concat((embedding_output, char_cnn_embeddings), -1)
-      
+        # this step is crucial, where the dynamic_rnn needs the exact shape
+        embedding_output = tf.reshape(embedding_output, (-1, self.padding_seq_length, self.embedding_size + self.filter_number * 3))
+
       with tf.variable_scope('rnn'):
         assert_op = tf.assert_equal(self.num_layers % 2, 0)
         with tf.control_dependencies([assert_op]):
