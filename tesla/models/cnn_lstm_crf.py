@@ -149,19 +149,19 @@ class TaggerModel(BaseModel):
           kernel_initializer=create_initializer())
       self.results['outputs'] = outputs
       
-      if self.is_training:
-        with tf.variable_scope('crf'):
-          self.transition_params = tf.Variable(tf.truncated_normal([self.num_classes, self.num_classes], stddev=0.1), name='transition_params')
+      with tf.variable_scope('crf', reuse=tf.AUTO_REUSE):
+        self.transition_params = tf.Variable(tf.truncated_normal([self.num_classes, self.num_classes], stddev=0.1), name='transition_params')
+        self.results['transition_params'] = self.transition_params
+        if self.is_training:
           self.log_likelihood, _ = crfEncode(
             logits=outputs,
             labels=golden_labels,
             sequence_lengths=input_length,
             transition_params=self.transition_params)
         
-        self.results['log_likelihood'] = self.log_likelihood
-        self.results['transition_params'] = self.transition_params
+          self.results['log_likelihood'] = self.log_likelihood
 
-  def decode(self, logit, transition_params):
+  def decode(self, logit, sequence_lengths):
     """Viterbi Decode.
     
     Args:
@@ -171,7 +171,7 @@ class TaggerModel(BaseModel):
       viterbi_sequence: a list of predicted indices.
 		  viterbi_score: the log-likelihood score.
     """
-    return crfDecode(logit, transition_params)
+    return crfDecode(logit, self.transition_params, sequence_lengths)
   
   def getResults(self, name):
     """Return the results.
