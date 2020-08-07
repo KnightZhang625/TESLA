@@ -47,7 +47,7 @@ def crfEncode(logits, labels, sequence_lengths, transition_params):
 	return tf.contrib.crf.crf_log_likelihood(
 		logits, labels, sequence_lengths, transition_params)
 
-def crfDecode(logit, transition_params):
+def crfDecode(logit, transition_params, sequence_lengths):
 	"""CRF Decode step. Only support single prediction.
 	
 	Args:
@@ -58,10 +58,11 @@ def crfDecode(logit, transition_params):
 		viterbi_sequence: a list of predicted indices.
 		viterbi_score: the log-likelihood score.
 	"""
-	assert_rank(logit, 2)
+	assert_rank(logit, [2, 3])
 	assert_rank(transition_params, 2)
-	return tf.contrib.crf.viterbi_decode(
-		logit, transition_params)
+	assert_rank(sequence_lengths, 1)
+	return tf.contrib.crf.crf_decode(
+		logit, transition_params, sequence_lengths)
 
 def embedding_lookup(input_ids,
 										 vocab_size,
