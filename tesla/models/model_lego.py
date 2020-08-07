@@ -227,7 +227,7 @@ if __name__ == '__main__':
 		log_likelihood, _ = crfEncode(scores, gold_labels, sequence_lengths, transition_params)
 	print(transition_params)
 	pred_scores = tf.random.normal([3, 10], dtype=tf.float32)
-	viterbi_sequence, viterbi_score = crfDecode(pred_scores, transition_params)
+	viterbi_sequence, viterbi_score = crfDecode(pred_scores, transition_params, sequence_lengths)
 	print(viterbi_sequence)
 	print(viterbi_score)
 
