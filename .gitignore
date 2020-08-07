@@ -132,3 +132,7 @@ dmypy.json
 
 # Dataset
 datasets/CONLL2000/*.bin
+
+# Model
+tesla/nlp_task/ner/log/
+tesla/nlp_task/ner/models/
