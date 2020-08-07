@@ -1,0 +1,1 @@
+python train_pipeline.py --mode package

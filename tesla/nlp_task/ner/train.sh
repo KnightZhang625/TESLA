@@ -1,0 +1,1 @@
+python train_pipeline.py --mode train --intra 0 --inter 0
