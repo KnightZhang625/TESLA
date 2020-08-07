@@ -29,6 +29,7 @@ from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent.parent
 sys.path.append(str(MAIN_PATH))
 from tesla.utils.data_pipeline import createBatchIndex, convertStrToIdx, padding_func
+from config import model_config
 
 def createDictionary(data_path):
   vocab_idx = {}
@@ -92,7 +93,9 @@ def data_generator(data_path, batch_size):
     golden_labels = list(map(convertStrToIdx_tag, golden_labels))
 
     # padding
-    input_x_max_length = max(input_length)
+    # ATTENTION: As the length of char should be equal to the length of the input,
+    # the model has a loop for textCNN, so fixed max length is required
+    input_x_max_length = model_config.padding_seq_length 
     padding_func_input_x = functools.partial(padding_func, max_length=input_x_max_length, pad_idx=vocab_idx['<padding>'])
     input_x_padded = list(map(padding_func_input_x, input_x))
   
@@ -113,7 +116,7 @@ def data_generator(data_path, batch_size):
     tags = {'golden_labels': golden_labels_padded}
     yield(features, tags)
 
-def input_fn(data_path, steps, batch_size):
+def inputFn(data_path, steps, batch_size):
   """
     Input function for the Estimator.
 
@@ -144,8 +147,9 @@ def input_fn(data_path, steps, batch_size):
 if __name__ == '__main__':
   ### Test input_fn ###
   conll2000_data_path = MAIN_PATH / 'datasets/CONLL2000/train.bin'
-  # for data in input_fn(conll2000_data_path, 1, 100):
-  #   print(data)
+  for data in inputFn(conll2000_data_path, 1, 100):
+    print(data)
+    input()
 
   ### create the dictionary ###
   vocab_idx, tag_idx = createDictionary(conll2000_data_path)
