@@ -115,6 +115,7 @@ class BucketSearch(object):
     base_distance = cosineDistance(query_vector, self.base_vector)[0][0]
 
     # do not let one search destroy the baseDist_cache
+    # as the insort() handles the ascending sort array, reverses it
     baseDist_cache_subs = self.baseDist_cache[:][::-1]
     bisect.insort(baseDist_cache_subs, base_distance)
     baseDist_cache_subs = baseDist_cache_subs[::-1]
