@@ -24,10 +24,11 @@ class Config(NoNewAttrs):
   char_size=28
   char_embedding_size=16
   padding_seq_length=50
+  padding_vocab_length=15
   vocab_size=19124
   embedding_size=320
   window_size=[2, 3, 4]
-  pool_size=[14, 13, 12]  # the padding char length is equal to 15, which is hard-coding in data_pipeline.py
+  pool_size=[14, 13, 12]  # use padding_vocab_length minus the window_size, then plus 1
   filter_number=2
   num_layers=4
   cell_type='gru'

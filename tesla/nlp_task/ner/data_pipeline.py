@@ -98,13 +98,14 @@ def data_generator(data_path, batch_size):
     # the model has a loop for textCNN, so fixed max length is required
     padding_func_input_x = functools.partial(padding_func, max_length=input_x_max_length, pad_idx=vocab_idx['<padding>'])
     input_x_padded = list(map(padding_func_input_x, input_x))
-  
-    padding_func_input_char = functools.partial(padding_func, max_length=15, pad_idx=char_idx['<padding>'])
+
+    padding_vocab_length = model_config.padding_vocab_length
+    padding_func_input_char = functools.partial(padding_func, max_length=padding_vocab_length, pad_idx=char_idx['<padding>'])
     input_char_padded = [list(map(padding_func_input_char, line)) for line in input_char]
     # use [char_idx['<padding>'] * 15] to pad the last part
     padding_func_input_char_mid = functools.partial(
       padding_func, max_length=input_x_max_length, pad_idx=[char_idx['<padding>'] 
-        for _ in range(15)])
+        for _ in range(padding_vocab_length)])
     input_char_padded = list(map(padding_func_input_char_mid, input_char_padded))
 
     padding_func_golden_labels = functools.partial(padding_func, max_length=input_x_max_length, pad_idx=tag_idx['<padding>'])
