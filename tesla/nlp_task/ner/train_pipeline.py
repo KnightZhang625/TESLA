@@ -76,7 +76,7 @@ def modelFnBuilder(config):
       output_spec = tf.estimator.EstimatorSpec(mode, predictions=predicitions)
     elif mode == tf.estimator.ModeKeys.TRAIN:
       log_likelihood = model.getResults('log_likelihood')
-      transition_params = model.getResults('transition_params')
+      # transition_params = model.getResults('transition_params')
       loss = tf.reduce_mean(-log_likelihood)
       # add l2 loss
       tvars = tf.trainable_variables()

@@ -27,7 +27,7 @@ class Config(NoNewAttrs):
   vocab_size=19124
   embedding_size=320
   window_size=[2, 3, 4]
-  pool_size=[14, 13, 12]
+  pool_size=[14, 13, 12]  # the padding char length is equal to 15, which is hard-coding in data_pipeline.py
   filter_number=2
   num_layers=4
   cell_type='gru'
@@ -38,4 +38,3 @@ class Config(NoNewAttrs):
   dropout=0.1
 
 model_config = Config()
-print(model_config.initialize_range)

@@ -85,8 +85,9 @@ def data_generator(data_path, batch_size):
     input_char = [[[char.lower() for char in vocab] for vocab in x] for x in input_x]
     golden_labels = [[entry.split(' ')[1] if entry.split(' ')[2] != 'O' else 'O' 
                   for entry in data] for data in data_batch]
-    input_length = [len(x) for x in input_x]
-
+    input_x_max_length = model_config.padding_seq_length 
+    input_length = [len(x) if len(x) <= input_x_max_length else input_x_max_length for x in input_x]
+    
     # convert str to idx
     input_x = list(map(convertStrToIdx_vocab, input_x))
     input_char = [list(map(convertStrToIdx_char, line)) for line in input_char]
@@ -95,7 +96,6 @@ def data_generator(data_path, batch_size):
     # padding
     # ATTENTION: As the length of char should be equal to the length of the input,
     # the model has a loop for textCNN, so fixed max length is required
-    input_x_max_length = model_config.padding_seq_length 
     padding_func_input_x = functools.partial(padding_func, max_length=input_x_max_length, pad_idx=vocab_idx['<padding>'])
     input_x_padded = list(map(padding_func_input_x, input_x))
   
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     input()
 
   ### create the dictionary ###
-  vocab_idx, tag_idx = createDictionary(conll2000_data_path)
+  # vocab_idx, tag_idx = createDictionary(conll2000_data_path)
   # with codecs.open(MAIN_PATH / 'datasets/CONLL2000/vocab_idx.bin', 'wb') as file:
   #   pickle.dump(vocab_idx, file)
   # with codecs.open(MAIN_PATH / 'datasets/CONLL2000/tag_idx.bin', 'wb') as file:
