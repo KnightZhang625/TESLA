@@ -24,7 +24,7 @@ import codecs
 import random
 import functools
 import tensorflow as tf
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent
 sys.path.append(str(MAIN_PATH))
