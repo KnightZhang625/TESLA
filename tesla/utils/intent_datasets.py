@@ -24,6 +24,8 @@ from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent
 sys.path.append(str(MAIN_PATH))
 
+from tesla.utils.data_pipeline import convertStrToIdx
+
 class IntentText(object):
   """Base Object for Intent Extraction Dataset."""
   cutFunc = lambda _, i: i if i <= 25 else i - 6
@@ -33,12 +35,40 @@ class IntentText(object):
     self.word_length = word_length
     self.word_idx = {}
     self.tag_idx = {}
-    # ignore the error report from the IDE
+    self.idx_tag = {}
+    self.intent_idx = {}
+    self.idx_intent = {}
     self.char_idx = {chr(i) : self.cutFunc(i-65) for i in range(65, 123) 
                       if i not in [i for i in range(91, 97)]}
+    self.char_idx['<unk>'] = 52
+    self.char_idx['<pad>'] = 53
   
   def processData(self, train_data, test_data):
+    """Interface for the inheriting Class."""
+    train_size = len(train_data)
+    test_size = len(test_data)
+    texts, tags, intents = list(zip(*train_data + test_data))
+
+    # create dictionary
+    self.word_idx, _ = self.makeWordDict(texts)
+    self.tag_idx, self.idx_tag = self.makeWordDict(tags)
+    self.intent_idx, self.idx_intent = self.makeWordDict([set(intents)])
+
+    # convert str to idx
+    convertStrToIdx_word = functools.partial(convertStrToIdx, dic=self.word_idx)
+    texts_idx = list(map(convertStrToIdx_word, texts))
+
+    convertStrToIdx_tag = functools.partial(convertStrToIdx, dic=self.tag_idx)
+    tags_idx = list(map(convertStrToIdx_tag, tags))
     
+    convertStrToIdx_indent = functools.partial(convertStrToIdx, dic=self.intent_idx)
+    indents_idx = list(convertStrToIdx_indent(intents))
+    
+    convertStrToIdx_char = functools.partial(convertStrToIdx, dic=self.char_idx)
+    chars_idx = [list(map(convertStrToIdx_char, sent)) for sent in texts]
+
+    assert len(texts_idx) == len(tags_idx) == len(indents_idx) == len(chars_idx)
+
 
   def makeWordDict(self, data):
     vocab_idx = {}
@@ -97,6 +127,7 @@ class SNIPS(IntentText):
     self.dir_path = dir_path
     train_data_raw, test_data_raw = self._loadDatasets()
     super(SNIPS, self).__init__(sentence_length=sentence_length, word_length=word_length)
+    self.processData(train_data_raw, test_data_raw)
 
   def _loadDatasets(self):
     train_data = self._loadIntents(self.train_files)
