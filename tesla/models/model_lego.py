@@ -67,7 +67,7 @@ def crfDecode(logit, transition_params, sequence_lengths):
 def embedding_lookup(input_ids,
 										 vocab_size,
 										 embedding_size,
-										 initializer_range,
+										 initialize_range,
 										 word_embedding_name='word_embeddings',
 										 use_one_hot_embeddings=False):
 	"""Looks up words embeddings for id tensor.
@@ -76,7 +76,7 @@ def embedding_lookup(input_ids,
 		input_ids: int32 Tensor of shape [batch_size, seq_length] containing word ids.
 		vocab_size: int. Size of the embedding vocabulary.
 		embedding_size: int. Width of the word embeddings.
-		initializer_range: float. Embedding initialation range.
+		initialize_range: float. Embedding initialation range.
 		word_embedding_name: string. Name of the embedding table.
 		use_one_hot_embeddings: bool. If True. use one-hot method for word embedding.
 			If False, use 'tf.gather()'.
@@ -87,7 +87,7 @@ def embedding_lookup(input_ids,
 	embedding_table = tf.get_variable(
 		name=word_embedding_name,
 		shape=[vocab_size, embedding_size],
-		initializer= create_initializer(initializer_range=initializer_range))
+		initializer= create_initializer(initialize_range=initialize_range))
 	
 	if use_one_hot_embeddings:
 		input_shape = get_shape_list(input_ids, expected_rank=2)

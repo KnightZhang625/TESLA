@@ -92,8 +92,8 @@ def assert_rank(tensor, expected_rank, name=None):
           name, scope_name, tensor_rank, str(tensor.shape), str(expected_rank)))
       raise ValueError
 
-def create_initializer(init_type='trunc', initializer_range=0.02):
+def create_initializer(init_type='trunc', initialize_range=0.02):
   if init_type is 'trunc':
-    return tf.truncated_normal_initializer(stddev=initializer_range)
+    return tf.truncated_normal_initializer(stddev=initialize_range)
   else:
     raise NotImplementedError('Initialize Type: `{}` not implemented.'.format(init_type))

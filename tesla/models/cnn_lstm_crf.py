@@ -85,7 +85,7 @@ class TaggerModel(BaseModel):
           input_ids=input_x,
           vocab_size=self.vocab_size,
           embedding_size=self.embedding_size,
-          initializer_range=self.initialize_range)
+          initialize_range=self.initialize_range)
       
       # character embedding
       if self.enable_char_embedding:
@@ -95,7 +95,7 @@ class TaggerModel(BaseModel):
             input_ids=input_char,
             vocab_size=self.char_size,
             embedding_size=self.char_embedding_size,
-            initializer_range=self.initialize_range,
+            initialize_range=self.initialize_range,
             word_embedding_name='char_embedding')
 
           char_cnn_embeddings = []
