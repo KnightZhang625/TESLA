@@ -18,6 +18,7 @@
 # ==============================================================================
 
 import sys
+import argparse
 import functools
 import tensorflow as tf
 from pathlib import Path
@@ -30,6 +31,21 @@ from tesla.utils.intent_datasets import SNIPS
 from tesla.utils.functools import Setup
 
 setup = Setup(path='log', log_name='tensorflow')
+
+def createArgumentParser():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--mode', type=str, required=True, 
+    help='Choose \'train\' or \'package\' the model.')
+  parser.add_argument('--intra', type=int, default=0,
+    help='Better equals to the physical cpu numbers.')
+  parser.add_argument('--inter', type=int, default=0,
+    help='Experiment starts from 2.')
+  parser.add_argument('--ckpt', type=str, default=cg.SAVE_MODEL_PATH,
+    help='The path where the model saved.')
+  parser.add_argument('--pb', type=str, default=cg.PB_MODEL_PATH,
+    help='The path where the pb model to saved.')
+
+  return parser
 
 def modelFnBuilder(config):
   """Returns 'model_fn' closure for Estimator."""
@@ -60,7 +76,7 @@ def modelFnBuilder(config):
     if  mode == tf.estimator.ModeKeys.PREDICT:
       intent_logits = model.getResults('intent_logits')
       intent_probs = tf.nn.softmax(intent_logits, axis=-1)
-      intent_labels = tf.nn.argmax(intent_probs, axis=-1)
+      intent_labels = tf.math.argmax(intent_probs, axis=-1)
 
       tag_logits = model.getResults('tag_logits')
       viterbi_sequence, viterbi_score = model.decode(logit=tag_logits, sequence_lengths=input_texts_length)
@@ -147,7 +163,28 @@ def main(**kwargs):
   input_fn = functools.partial(snips.trainInputFn, is_train=True, batch_size=cg.BATCH_SIZE, steps=cg.TRAIN_STEPS)
   estimator.train(input_fn)
 
+def package(**kwargs):
+  ckpt_path = kwargs['ckpt_path']
+  pb_path = kwargs['pb_path']
+
+  model_fn = modelFnBuilder(cg.model_config)
+  estimator = tf.estimator.Estimator(model_fn, ckpt_path)
+  Path(pb_path).mkdir(exist_ok=True)
+
+  snips = SNIPS()
+  estimator.export_saved_model(pb_path, snips.serverInputFn)
+
 if __name__ == '__main__':
-  main(save_path=cg.SAVE_MODEL_PATH, intra=0, inter=0)
+  parser = createArgumentParser()
+  args = parser.parse_args()
 
+  mode = args.mode
+  intra = args.intra
+  inter = args.inter
+  save_path = args.ckpt
+  pb_path = args.pb
 
+  if mode == 'train':
+    main(save_path=save_path, intra=intra, inter=inter)
+  elif mode == 'package':
+    package(ckpt_path=save_path, pb_path=pb_path)
