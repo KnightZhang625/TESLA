@@ -46,4 +46,5 @@ TESLA is an open source platform for rewriting the [nlp-architect](http://nlp_ar
 
 NLP models that provide best (or near) in class performance, please click the link and see the tutorial for each NLP task:  
 
-* [Named Entity Recognition](https://github.com/KnightZhang625/TESLA/tree/master/tesla/nlp_task/ner)
+* [Named Entity Recognition](https://github.com/KnightZhang625/TESLA/tree/master/tesla/nlp_task/ner)  
+* [Intent Extraction](https://github.com/KnightZhang625/TESLA/tree/master/tesla/nlp_task/IntentExtraction)
