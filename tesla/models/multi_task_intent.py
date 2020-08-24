@@ -139,7 +139,7 @@ class MultiTaskIntentModel(BaseModel):
 			# use 1st RNN result to predict intent
 			with tf.variable_scope('intent_predict'):
 				# [(b, h_f_last), (b, h_b_last)] -> (b, 2h)
-				last_time_layer_hidden_output = tf.concat(bi_outputs_word[-2:], axis=-1)
+				last_time_layer_hidden_output = tf.concat(bi_states_word[-2:], axis=-1)
 				intent_logits = tf.layers.dense(
 					last_time_layer_hidden_output,
 					self.num_intents,
@@ -187,11 +187,17 @@ class MultiTaskIntentModel(BaseModel):
 						sequence_length=single_sentence_lengths)
 
 					# pick the last time step hidden for each word -> (b, h), then concatenate
-					fw_bi_states_char_single_last = bi_states_char_single[0][-1]			
-					bw_bi_states_char_single_last = bi_states_char_single[0][-1]			
+					if num_bi_layers == 1:
+						fw_bi_states_char_single_last = bi_states_char_single[0]
+						bw_bi_states_char_single_last = bi_states_char_single[1]
+					else:
+						fw_bi_states_char_single_last = bi_states_char_single[0][-1]
+						bw_bi_states_char_single_last = bi_states_char_single[0][-1]
+
 					bi_states_char_single_last = tf.concat((fw_bi_states_char_single_last,
 																									bw_bi_states_char_single_last),
 																									axis=-1)
+
 					# expand the dimension for future batch size use -> (1, s, 2h)
 					bi_outputs_char.append(tf.expand_dims(bi_states_char_single_last, axis=0))
 				# (b, s, 2h)
@@ -236,6 +242,7 @@ class MultiTaskIntentModel(BaseModel):
 					name='transition_params',
 					shape=[self.num_tags, self.num_tags],
 					initializer=create_initializer(initialize_range=self.initialize_range))
+
 				if self.is_training:
 					self.log_likelihood, _ = crfEncode(
 						logits=tag_logits,
@@ -243,7 +250,7 @@ class MultiTaskIntentModel(BaseModel):
 						sequence_lengths=input_texts_length,
 						transition_params=self.transition_params)
 					self.results['log_likelihood'] = self.log_likelihood
-	
+					
 	def decode(self, logit, sequence_lengths):
 		return crfDecode(logit, self.transition_params, sequence_lengths)
 	
