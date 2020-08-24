@@ -18,6 +18,7 @@
 # ==============================================================================
 
 import sys
+import functools
 import tensorflow as tf
 from pathlib import Path
 MAIN_PATH = Path(__file__).absolute().parent.parent.parent.parent
@@ -71,13 +72,14 @@ def modelFnBuilder(config):
     elif mode == tf.estimator.ModeKeys.TRAIN:
       gold_intent_labels = labels['output_indents']
       intent_logits = model.getResults('intent_logits')
-      max_time = tf.shape(gold_intent_labels)[1]
-      target_weights = tf.sequence_mask(input_texts_length, max_time, dtype=intent_logits.dtype)
+
+      # max_time = tf.shape(gold_intent_labels)[1]
+      # target_weights = tf.sequence_mask(input_texts_length, max_time, dtype=intent_logits.dtype)
       batch_size = tf.cast(cg.BATCH_SIZE, dtype=tf.float32)
 
       intent_loss = tf.reduce_sum(
           tf.nn.sparse_softmax_cross_entropy_with_logits(
-          labels=gold_intent_labels, logits=intent_logits) * target_weights) / batch_size
+          labels=gold_intent_labels, logits=intent_logits)) / batch_size
 
       tag_log_likelihood = model.getResults('log_likelihood')
       tag_loss = tf.reduce_mean(-tag_log_likelihood)
@@ -117,6 +119,35 @@ def main(**kwargs):
   save_model_path = kwargs['save_path']
   Path(save_model_path).mkdir(exist_ok=True)
 
+  model_fn = modelFnBuilder(cg.model_config)
 
+  gpu_config = tf.ConfigProto()
+  gpu_config.gpu_options.allow_growth = True
+  intra = kwargs['intra']
+  inter = kwargs['inter']
+  gpu_config.intra_op_parallelism_threads = intra
+  gpu_config.inter_op_parallelism_threads = inter
+
+  run_config = tf.estimator.RunConfig(
+    session_config=gpu_config,
+    keep_checkpoint_max=1,
+    save_checkpoints_steps=cg.SAVE_STEPS,
+    model_dir=save_model_path)
+
+	# # For TPU		
+	# run_config = tf.contrib.tpu.RunConfig(
+	# 	session_config=gpu_config,
+	# 	keep_checkpoint_max=1,
+	# 	save_checkpoints_steps=10,
+	# 	model_dir=_cg.SAVE_MODEL_PATH)
+
+  estimator = tf.estimator.Estimator(model_fn, config=run_config)
+  snips = SNIPS()
+  
+  input_fn = functools.partial(snips.trainInputFn, is_train=True, batch_size=cg.BATCH_SIZE, steps=cg.TRAIN_STEPS)
+  estimator.train(input_fn)
+
+if __name__ == '__main__':
+  main(save_path=cg.SAVE_MODEL_PATH, intra=0, inter=0)
 
 
