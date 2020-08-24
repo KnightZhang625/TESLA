@@ -106,26 +106,34 @@ class IntentText(object):
     texts, tags, indents, chars = zip(*datasets_copy)
     data_length = len(texts)
     for s, e in createBatchIndex(data_length, batch_size):
-      batch_texts = texts[s : e]
+      batch_texts = list(texts[s : e])
+      batch_tags = list(tags[s : e])
+      output_indents = list(indents[s : e])
+      batch_chars = list(chars[s : e])
+
+      # In the model, we will iterate each batch(i.e. sentence) to do char embedding,
+      # so the batch_size should be equal for each train step.
       if len(batch_texts) < batch_size:
-        add_texts = [random.choice(batch_texts) for _ in range(batch_size-len(batch_texts))]
-        batch_texts += add_texts
-        
+        add_indices = [random.choice(range(len(batch_texts))) 
+                        for _ in range(batch_size - len(batch_texts))]
+  
+        batch_texts += [batch_texts[idx] for idx in add_indices]
+        batch_tags += [batch_tags[idx] for idx in add_indices]
+        output_indents += [output_indents[idx] for idx in add_indices]        
+        batch_chars += [batch_chars[idx] for idx in add_indices]
+
       input_texts_length = [len(sent) for sent in batch_texts]
       max_input_texts_length = max(input_texts_length)
       padding_func_texts = functools.partial(
         padding_func, max_length=max_input_texts_length, pad_idx=self.word_idx['<pad>'])
       input_texts = list(map(padding_func_texts, batch_texts))
 
-      batch_tags = tags[s : e]
       batch_tags_length = [len(tag) for tag in batch_tags]
       padding_func_tag = functools.partial(
         padding_func, max_length=max(batch_tags_length), pad_idx=self.tag_idx['<pad>'])
       output_tags = list(map(padding_func_tag, batch_tags))
  
-      output_indents = indents[s : e]
       
-      batch_chars = chars[s : e]
       input_chars_length = [[len(char) for char in sent] for sent in batch_chars]
       padding_func_charLength = functools.partial(
         padding_func, max_length=max_input_texts_length, pad_idx=0)
@@ -260,6 +268,24 @@ class SNIPS(IntentText):
 
     return dataset
   
+  def serverInputFn(self):
+    input_texts = tf.placeholder(tf.int32, shape=[None, None], name='input_texts')
+    input_texts_length = tf.placeholder(tf.int32, shape=[None], name='input_texts_length')
+    input_chars = tf.placeholder(tf.int32, shape=[None, None, None], name='input_chars')
+    input_chars_length = tf.placeholder(tf.int32, shape=[None, None], name='input_chars_length')
+
+    receive_tensors = {'input_texts': input_texts,
+                       'input_texts_length': input_texts_length,
+                       'input_chars': input_chars,
+                       'input_chars_length': input_chars_length}
+    
+    features = {'input_texts': input_texts,
+                'input_texts_length': input_texts_length,
+                'input_chars': input_chars,
+                'input_chars_length': input_chars_length}
+    
+    return tf.estimator.export.ServingInputReceiver(features, receive_tensors)
+  
   @staticmethod
   def _createTags(tag, length):
     """Return labels like ['B-tag', 'I-tag']."""
@@ -271,9 +297,9 @@ class SNIPS(IntentText):
 if __name__ == '__main__':
   snips = SNIPS()
   
-  # for data in snips.generateData(snips.train_datas, batch_size=2):
-  #   print(data)
-  #   input()
+  for data in snips.generateData(snips.train_datas, batch_size=32):
+    print(len(data[0]['input_texts']))
+    # input()
 
-  for data in snips.trainInputFn(True, 100, 2):
-    print(data)
+  # for data in snips.trainInputFn(True, 100, 2):
+  #   print(data)
