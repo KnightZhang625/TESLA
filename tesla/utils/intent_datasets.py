@@ -107,6 +107,10 @@ class IntentText(object):
     data_length = len(texts)
     for s, e in createBatchIndex(data_length, batch_size):
       batch_texts = texts[s : e]
+      if len(batch_texts) < batch_size:
+        add_texts = [random.choice(batch_texts) for _ in range(batch_size-len(batch_texts))]
+        batch_texts += add_texts
+        
       input_texts_length = [len(sent) for sent in batch_texts]
       max_input_texts_length = max(input_texts_length)
       padding_func_texts = functools.partial(

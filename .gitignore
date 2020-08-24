@@ -133,7 +133,12 @@ dmypy.json
 # Dataset
 datasets/CONLL2000/*.bin
 
-# Model
+# NER Model
 tesla/nlp_task/ner/log/
 tesla/nlp_task/ner/models/
 tesla/nlp_task/ner/pb_models/
+
+# Intent Extraction Model
+tesla/nlp_task/IntentExtraction/log/
+tesla/nlp_task/IntentExtraction/models/
+tesla/nlp_task/IntentExtraction/pb_models/

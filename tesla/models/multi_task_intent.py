@@ -74,6 +74,11 @@ class MultiTaskIntentModel(BaseModel):
 		self.dropout = config.dropout
 
 		self.results = {}
+		self.buildGraph(input_texts,
+										input_texts_length,
+										input_chars,
+										input_chars_length,
+										output_tags)
 	
 	def buildGraph(self,
 								 input_texts,
